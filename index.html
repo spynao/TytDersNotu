@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ders Notları</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>Ders Notları</h1>
+            </div>
+            <div id="dersList" class="ders-list"></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="header">
+                <h2 id="seciliDers"></h2>
+                <div class="tamamlanma">
+                    <div class="progress-bar">
+                        <div id="tamamlanmaBar" class="progress"></div>
+                    </div>
+                    <span id="tamamlanmaYuzde">0%</span>
+                </div>
+            </div>
+
+            <div id="konuListesi" class="konu-list"></div>
+        </main>
+
+        <div id="editorModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="editorModalLabel"></h3>
+                    <div class="modal-actions">
+                        <button onclick="pdfIndir()" class="action-btn" title="PDF İndir">
+                            <i class="format-icon">📥 pdf</i>
+                        </button>
+                        <button class="modal-close" onclick="modalKapat()">×</button>
+                    </div>
+                </div>
+
+                <div class="modal-body">
+                    <div class="durum-buttons">
+                        <button data-durum="başlanmadı" onclick="durumGuncelle(this)"><span>◯</span> Başlanmadı</button>
+                        <button data-durum="devam ediyor" onclick="durumGuncelle(this)"><span>↻</span> Devam Ediyor</button>
+                        <button data-durum="tamamlandı" onclick="durumGuncelle(this)"><span>✓</span> Tamamlandı</button>
+                    </div>
+
+                    <div class="editor-container">
+                        <div class="editor-toolbar">
+                            <div class="toolbar-group">
+                                <select id="fontSelect" onchange="formatText('fontName', this.value)" class="font-select">
+                                    <option value="Inter">Inter</option>
+                                    <option value="Arial">Arial</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Verdana">Verdana</option>
+                                    <option value="Roboto">Roboto</option>
+                                    <option value="Open Sans">Open Sans</option>
+                                </select>
+                                <select id="sizeSelect" onchange="formatText('fontSize', this.value)" class="size-select">
+                                    <option value="1">Çok Küçük</option>
+                                    <option value="2">Küçük</option>
+                                    <option value="3" selected>Normal</option>
+                                    <option value="4">Büyük</option>
+                                    <option value="5">Çok Büyük</option>
+                                    <option value="6">Başlık 1</option>
+                                    <option value="7">Başlık 2</option>
+                                </select>
+                            </div>
+                            <div class="toolbar-group">
+                                <button onclick="formatText('bold')" data-command="bold" class="format-btn" title="Kalın (Ctrl+B)">
+                                    <i class="format-icon">B</i>
+                                </button>
+                                <button onclick="formatText('italic')" data-command="italic" class="format-btn" title="İtalik (Ctrl+I)">
+                                    <i class="format-icon">I</i>
+                                </button>
+                                <button onclick="formatText('underline')" data-command="underline" class="format-btn" title="Altı Çizili (Ctrl+U)">
+                                    <i class="format-icon">U</i>
+                                </button>
+                                <button onclick="formatText('strikeThrough')" data-command="strikeThrough" class="format-btn" title="Üstü Çizili">
+                                    <i class="format-icon">S</i>
+                                </button>
+                            </div>
+                            <div class="toolbar-group">
+                                <button onclick="formatText('justifyLeft')" data-command="justifyLeft" class="format-btn" title="Sola Hizala">
+                                    <i class="format-icon">←</i>
+                                </button>
+                                <button onclick="formatText('justifyCenter')" data-command="justifyCenter" class="format-btn" title="Ortala">
+                                    <i class="format-icon">↔</i>
+                                </button>
+                                <button onclick="formatText('justifyRight')" data-command="justifyRight" class="format-btn" title="Sağa Hizala">
+                                    <i class="format-icon">→</i>
+                                </button>
+                                <button onclick="formatText('justifyFull')" data-command="justifyFull" class="format-btn" title="İki Yana Yasla">
+                                    <i class="format-icon">↔↔</i>
+                                </button>
+                            </div>
+                            <div class="toolbar-group">
+                                <button onclick="formatText('insertUnorderedList')" data-command="insertUnorderedList" class="format-btn" title="Madde İşaretli Liste">
+                                    <i class="format-icon">•</i>
+                                </button>
+                                <button onclick="formatText('insertOrderedList')" data-command="insertOrderedList" class="format-btn" title="Numaralı Liste">
+                                    <i class="format-icon">1.</i>
+                                </button>
+                                <button onclick="formatText('indent')" data-command="indent" class="format-btn" title="Girintiyi Artır">
+                                    <i class="format-icon">→|</i>
+                                </button>
+                                <button onclick="formatText('outdent')" data-command="outdent" class="format-btn" title="Girintiyi Azalt">
+                                    <i class="format-icon">|←</i>
+                                </button>
+                            </div>
+                            <div class="toolbar-group">
+                                <button onclick="formatText('insertHorizontalRule')" data-command="insertHorizontalRule" class="format-btn" title="Yatay Çizgi">
+                                    <i class="format-icon">―</i>
+                                </button>
+                                <button onclick="formatText('removeFormat')" data-command="removeFormat" class="format-btn" title="Formatı Temizle">
+                                    <i class="format-icon">✕</i>
+                                </button>
+                            </div>
+                            <div class="toolbar-group">
+                                <input type="color" id="textColor" onchange="formatText('foreColor', this.value)" title="Yazı Rengi">
+                                <input type="color" id="bgColor" onchange="formatText('hiliteColor', this.value)" title="Vurgu Rengi">
+                            </div>
+                        </div>
+                        <div id="editor" class="editor" contenteditable="true"></div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button onclick="notKaydet()" class="btn-kaydet">
+                        <i class="format-icon">💾</i>
+                        Kaydet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
